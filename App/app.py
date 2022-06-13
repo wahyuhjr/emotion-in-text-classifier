@@ -1,5 +1,7 @@
 from secrets import choice
+from turtle import color
 from unittest import result
+import altair as alt
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -16,16 +18,16 @@ def get_prediction_proba(docx):
     return result
 
 
-emotions_emoji_dict = {"anger": "😠", "disgust": "🤮", "fear": "😨😱", "happy": "🤗",
+emotion_emoji_dict = {"anger": "😠", "disgust": "🤮", "fear": "😨😱", "happy": "🤗",
                        "joy": "😂", "neutral": "😐", "sad": "😔", "sadness": "😔", "shame": "😳", "surprise": "😮"}
 
 
 def main():
     st.title("Emotion Detection App")
     menu = ["Home", "Monitor","About"]
-    pilih = st.sidebar.selectbox("Menu", menu)
+    choice = st.sidebar.selectbox("Menu", menu)
     
-    if pilih == "Home":
+    if choice == "Home":
         st.subheader("Home-Emotion in Text")
         
         with st.form(key='myform_emotion_form'):
@@ -43,16 +45,21 @@ def main():
                 st.write(raw_text)
                 
                 st.success("Prediction")
-                emoji_icon = emotions_emoji_dict[prediction]
+                emoji_icon = emotion_emoji_dict[prediction]
                 st.write("{}:{}".format(prediction,emoji_icon))
-                
+                st.write("Confidence:{}".format(np.max(probability)))
                 
             with col2:
                 st.success("Prediction Probability")
-                st.write(probability)
-                proba_df = pd.DataFrame(probability, columns - pipe_lr.classes_)
-                st.write(proba_df.T)
-        
+                # st.write(probability)
+                proba_df = pd.DataFrame(probability, columns = pipe_lr.classes_)
+                # st.write(proba_df.T)
+                proba_df_clean = proba_df.T.reset_index()
+                proba_df_clean.columns = ["emotion", "probability"]
+                
+                fig = alt.Chart(proba_df_clean).mark_bar().encode(x='emotion', y='probability',color='emotion')
+                st.altair_chart(fig, use_container_width=True)
+
     elif pilih == "Monitor":
         st.subheader("Mointor App")
         
